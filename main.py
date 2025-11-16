@@ -5,6 +5,7 @@ import traceback
 from pathlib import Path
 import logging
 import shutil
+import argparse
 
 class Exporter:
     def __init__(self, executable_fl64_path, projects_path = None):
@@ -85,15 +86,37 @@ class Exporter:
             
 
 if __name__ == "__main__":
-    executable = r'c:\PROGRA~1\Image-Line\"FL Studio 21"\fl64.exe'
-    path_to_exported_projects = r"%UserProfile%\Documents\fl_exporter"
-    default_projects_path = r"%UserProfile%\Documents\Image-Line\FL Studio\Projects"
+    parser = argparse.ArgumentParser(description="Export FL Studio projects to .zip format.")
+    parser.add_argument(
+        "--executable",
+        default=r'C:\Program Files\Image-Line\FL Studio 21\FL64.exe',
+        help="Path to the FL Studio executable (fl64.exe)."
+    )
+    parser.add_argument(
+        "--output-dir",
+        default=r"%UserProfile%\Documents\fl_exporter",
+        help="Directory to save the exported .zip files."
+    )
+    parser.add_argument(
+        "--projects-dir",
+        default=r"%UserProfile%\Documents\Image-Line\FL Studio\Projects",
+        help="Directory to discover .flp project files."
+    )
+    args = parser.parse_args()
 
-    exporter = Exporter(executable)
+    # Expand environment variables in paths
+    executable_path = os.path.expandvars(args.executable)
+    output_dir_path = os.path.expandvars(args.output_dir)
+    projects_dir_path = os.path.expandvars(args.projects_dir)
 
-    os.makedirs(path_to_exported_projects, exist_ok=True)
+    if not os.path.exists(executable_path):
+        print(f"Error: Executable not found: {executable_path}")
+        exit(1)
+
+    exporter = Exporter(executable_path)
+    os.makedirs(output_dir_path, exist_ok=True)
 
     exporter.main(
-        folder_to_save_projects=path_to_exported_projects, 
-        discover_projects=default_projects_path
+        folder_to_save_projects=output_dir_path,
+        discover_projects=projects_dir_path
     )
